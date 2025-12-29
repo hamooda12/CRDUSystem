@@ -1,12 +1,47 @@
   const tablesbtn=document.getElementById("tablesbutton")
 const main=document.getElementById("mainSection")
 let columnsName=[];
-function gettype(type){
-  
-if(type.toLowerCase().includes("int")||type.toLowerCase().includes("decimal")){
-return "Number"
+function gettype(type) {
+  const t = type.toLowerCase();
+  if (
+    t.includes("int") ||
+    t.includes("decimal") ||
+    t.includes("float") ||
+    t.includes("double") ||
+    t.includes("real")
+  ) {
+    return "Number";
+  }
+  if (
+    t.includes("char") ||
+    t.includes("text") ||
+    t.includes("enum") ||
+    t.includes("set") ||
+    t.includes("varchar") ||
+    t.includes("tinytext") ||
+    t.includes("mediumtext") ||
+    t.includes("longtext")
+  ) {
+    return "String";
+  }
+  if (
+    t.includes("date") ||
+    t.includes("time") ||
+    t.includes("year") ||
+    t.includes("timestamp")
+  ) {
+    return "Date";
+  }
+  if (
+    t.includes("bool") ||
+    t === "tinyint(1)"
+  ) {
+    return "Boolean";
+  }
+  return "Unknown";
 }
-}
+
+
 fetch('/MangementSystem/getTables.php')
   .then(res => res.json())
   .then(data => {
@@ -55,7 +90,7 @@ columnsName.push(e)
     if(!e.extra.includes("auto_increment"))
     fields.innerHTML+=` <div class="col-md-3 col-sm-6 col-12 mb-3">
   <label class="form-label">${e.name}</label>
-  <input type="text" class="form-control" name="title" required></div>`
+  <input type="${gettype(e.type)}" class="form-control" name="${e.name}" required></div>`
   })
   
 
