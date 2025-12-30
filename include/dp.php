@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'name' => $_POST['dbName']
         ];
 
-        header("Location: ../manegementSystem.php");
+        header("Location: ../manegementSystem.html");
     } else {
         header("Location: ../index.php?dbError=1");
     }

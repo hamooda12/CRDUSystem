@@ -1,67 +1,26 @@
-  const tablesbtn=document.getElementById("tablesbutton")
-const main=document.getElementById("mainSection")
-let columnsName=[];
-function gettype(type) {
-  const t = type.toLowerCase();
-  if (
-    t.includes("int") ||
-    t.includes("decimal") ||
-    t.includes("float") ||
-    t.includes("double") ||
-    t.includes("real")
-  ) {
-    return "Number";
-  }
-  if (
-    t.includes("char") ||
-    t.includes("text") ||
-    t.includes("enum") ||
-    t.includes("set") ||
-    t.includes("varchar") ||
-    t.includes("tinytext") ||
-    t.includes("mediumtext") ||
-    t.includes("longtext")
-  ) {
-    return "String";
-  }
-  if (
-    t.includes("date") ||
-    t.includes("time") ||
-    t.includes("year") ||
-    t.includes("timestamp")
-  ) {
-    return "Date";
-  }
-  if (
-    t.includes("bool") ||
-    t === "tinyint(1)"
-  ) {
-    return "Boolean";
-  }
-  return "Unknown";
-}
-getbasicstructure()
-async function getbasicstructure(){
-let d=await fetch('/MangementSystem/getTables.php')
-let data=await d.json()
-  if (!data.success) {
-      console.error(data.message);
-      return;
-    }
-   
-          data.tables.forEach(table => {
-      if(!table.table.toLowerCase().includes("user")){
-        
-      tablesbtn.innerHTML+=`
-                 <button class="btn btn-outline-light nav-button" data-target="section-${table.table}">${table.table}</button>
-                            `}
-    });
-    tablesbtn.innerHTML+=`  <button class="btn btn-outline-light btn-danger nav-button mt-3" id="btn-logout">Log Out</button>`;
-  
-}
 
-getDachboard()
-async function getDachboard(){
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/manegementsyle.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+
+        <nav class="col-12 col-md-3 col-lg-2 sidebar">
+            <div class="brand">Dashboard</div>
+
+            <div class="d-grid gap-2 mt-2" id="tablesbutton">
+                <button class="btn btn-outline-light nav-button active" data-target="section-dashboard">Dashboard</button>
+      <script>
+        getbasicstructure()
+async function getbasicstructure(){
 let d=await fetch('/MangementSystem/getTables.php')
 let data=await d.json()
   if (!data.success) {
@@ -86,6 +45,15 @@ let data=await d.json()
      oneToOne.innerHTML=`<p class="mb-3">Each record in Table A relates to exactly one record in Table B.</p>`
      oneToMany.innerHTML=`<p class="mb-3">Each record in Table A relates to multiple records in Table B.</p>`
      ManytoMany.innerHTML=`<p class="mb-3">Records in Table A relate to multiple records in Table B and vice versa.</p>`
+     tableStructure.innerHTML=`<thead>
+                                    <tr>
+                                        <th>Table Name</th>
+                                        <th>Primary Key</th>
+                                        <th>Foreign Keys</th>
+                                        <th>Record Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`
     
                                 console.log(data.relations)
        Array.from(data.relations['one_to_one']).forEach((e)=>{
@@ -152,7 +120,9 @@ tableHTML += `</tbody>`;
 tableStructure.innerHTML = tableHTML;
 
      data.tables.forEach(table => {
-      
+        let primarykey=table.columns.find((e)=>e.key==="PRI")
+        let forginKey=table.columns.find((e)=>e.key==="MUL")
+        
 
       
                          
@@ -180,8 +150,8 @@ spancolumns.innerHTML+=`
                             `
    })
 
-    main.innerHTML=`       
-     <section id="" class="section-view active">
+    main.innerHTML=`    
+     <section id="" class="section-view active">   
             <main class="col-12 col-md-9 col-lg-10 content-wrapper" id="mainSection">
             <div class="page-header">
                 <h1 class="page-title">Database Structure</h1>
@@ -246,71 +216,30 @@ spancolumns.innerHTML+=`
       
   
 }
-     
+      </script>
 
- tablesbtn.addEventListener("click", async (event) => {
+            </div>
 
-  const button = event.target.closest(".nav-button");
-  if (!button) return; 
-Array.from(tablesbtn.querySelectorAll(".nav-button")).forEach((e)=>{
-  e.classList.remove("active");
-})
-button.classList.add("active");
+            <div class="mt-auto pt-3 small text-secondary text-center">
+                &copy; 2025 DataBase Manegement System
+            </div>
+        </nav>
 
-  const tableName = button.textContent;
+        <main class="col-12 col-md-9 col-lg-10 content-wrapper" id="mainSection">
 
-  const targetSection = button.dataset.target;
-  console.log(button)
-   if(targetSection==="section-dashboard"){
-    getDachboard();
-    return
-  }
-  else if( event.target.closest(".btn-danger")){
-    console.log("hi")
-    location.href = "index.php";
-  }
-  let table={};
-  let da=await fetch('/MangementSystem/getTables.php')
-  let alldata=await da.json()
-table= await alldata.tables.find((e)=> e.table===tableName)
- columnsName=[]
-Array.from(table.columns).forEach((e)=>{
-columnsName.push(e)
-  })
- 
-  let fields=document.createElement("div")
- 
-     fields.innerHTML=""
-  columnsName.forEach((e)=>{
-   
-    if(!e.extra.includes("auto_increment"))
-    fields.innerHTML+=` <div class="col-md-3 col-sm-6 col-12 mb-3">
-  <label class="form-label">${e.name}</label>
-  <input type="${gettype(e.type)}" class="form-control" name="${e.name}" required></div>`
-  })
-  
+          
+      
 
 
-main.innerHTML=`
- <section id="section-${tableName}" class="section-view active">
-                <h2 class="section-title">${tableName}</h2>
-                <div class="card mb-4 ">
-                    <div class="card-header">Insert New ${tableName}</div>
-                    <div class="card-body">
-                        <form id="form${tableName}Insert">
-                        <div class="row">
-                           ${fields.innerHTML}
-                           </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary mt-3">Insert ${tableName}</button>
-                        </form>
-                    </div>
-                </div>
+         
+        </main>
 
-              
-                </div>
-            </section>
+    </div>
+</div>
 
-`
- 
-});
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script src="assets/javaScript/maneg.js"></script>
+</body>
+</html>
