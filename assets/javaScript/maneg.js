@@ -87,7 +87,7 @@ function makearray(arr){
   }
   let table={};
   getDB() 
-table= await DB_CACHE.tables.find((e)=> e.table===tableName)
+table= await data.tables.find((e)=> e.table===tableName)
  columnsName.length = 0;
 makearray(table.columns).forEach((e)=>{
 columnsName.push(e)

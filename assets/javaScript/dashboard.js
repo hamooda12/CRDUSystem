@@ -1,19 +1,22 @@
 document.addEventListener("DOMContentLoaded",()=>{
  getDashboard()
 })
-let DB_CACHE = null;
+let data = null;
 
 async function getDB() {
-  if (DB_CACHE) return DB_CACHE;
+  if (data) return data;
 
   const res = await fetch('/MangementSystem/getTables.php');
-  DB_CACHE = await res.json();
-  return DB_CACHE;
+  data = await res.json();
+  return data;
 }
 
 async function getDashboard(){
 getDB()
-  if (!DB_CACHE.success) {
+if(!data)
+    return
+console.log(data)
+  if (!data.success) {
       console.error(data.message);
       return;
     }
