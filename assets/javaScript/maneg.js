@@ -79,7 +79,7 @@ function makearray(arr){
   const tableName = button.textContent;
   const targetSection = button.dataset.target;
   if(targetSection==="section-dashboard"){
-  getDashboard()
+initDashboard()
     return
   }
   else if( event.target.closest(".btn-danger")){
