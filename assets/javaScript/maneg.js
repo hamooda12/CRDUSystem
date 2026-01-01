@@ -94,17 +94,51 @@ columnsName.push(e)
   })
  
   let fields=document.createElement("div")
+  const thead=document.createElement("thead");
  
+const tr = document.createElement("tr");
   fields.innerHTML=""
   columnsName.forEach((e)=>{
-   
+    let text=``
+  if(e.default){
+text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="${e.default}"></div>`
+  }
+  else if(e.null==="YES"){
+ text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="You can left it empty"></div>`
+  }
+  else{
+   text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="without default value"></div>`
+  }
+   console.log(e)
     if(!e.extra.includes("auto_increment"))
     fields.innerHTML+=` <div class="col-md-3 col-sm-6 col-12 mb-3">
   <label class="form-label">${e.name}</label>
-  <input type="${gettype(e.type)}" class="form-control" name="${e.name}" required></div>`
-  })
-  
+ ${text}
+  `
 
+  
+   const th = document.createElement("th");
+    th.textContent = e.name;
+    tr.appendChild(th);
+
+  })
+  thead.appendChild(tr);
+  
+  const tbody=document.createElement("tbody")
+ 
+ 
+  makearray(table.data).forEach((e)=>{
+   
+    const tr2 = document.createElement("tr");
+     columnsName.forEach((e1)=>{
+         const td = document.createElement("td");
+    td.textContent = e[e1.name];
+    tr2.appendChild(td);
+  })
+   tbody.appendChild(tr2);
+})
+ console.log(tbody)
+  
 
 main.innerHTML=`
  <section id="section-${tableName}" class="section-view active">
@@ -121,10 +155,27 @@ main.innerHTML=`
                         </form>
                     </div>
                 </div>
-
-              
                 </div>
-            </section>
+                    <section class="dashboard-section">
+              <h2>Complete Table Structure</h2>
+      
+        <div class="db-card">
+          <div class="card-header">${tableName} List
+             <input type="text" class="form-control form-control-sm" placeholder="Search...">
+          </div>
+          <div class="card-body">
+            <table class="db-table">
+              
+                  ${thead.outerHTML}
+             
+              ${tbody.outerHTML}
+            
+            </table>
+          </div>
+        </div>
+</section>
+</section>
+
 
 `
  
