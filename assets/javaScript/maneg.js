@@ -240,11 +240,17 @@ else{
 b.classList.toggle("btn-save");
 b.textContent="Save"
 
- cel.forEach((e,index)=>{
+ cel.forEach((e)=>{
    fieldvalue.push(e.textContent)
   
-  e.innerHTML=`<textarea class="inputedit" rows="2"></textarea>`
+  e.innerHTML=`<textarea class="inputedit" rows="2" ></textarea>`
  })
+
+  cel.forEach((e,index)=>{
+    if(index==0)
+  console.log( e.querySelector("textarea").focus())
+ })
+
 }
 
 
