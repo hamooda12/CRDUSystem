@@ -1,6 +1,8 @@
 const tablesbtn=document.getElementById("tablesbutton")
 const main=document.getElementById("mainSection")
 let columnsName=[];
+const  headtablewithfields={};
+getbasicstructure()
 function gettype(type) {
   const t = type.toLowerCase();
   if (
@@ -10,7 +12,7 @@ function gettype(type) {
     t.includes("double") ||
     t.includes("real")
   ) {
-    return "Number";
+    return "number";
   }
   if (
     t.includes("char") ||
@@ -22,7 +24,7 @@ function gettype(type) {
     t.includes("mediumtext") ||
     t.includes("longtext")
   ) {
-    return "String";
+    return "text";
   }
   if (
     t.includes("date") ||
@@ -40,7 +42,6 @@ function gettype(type) {
   }
   return "Unknown";
 }
-getbasicstructure()
 async function getbasicstructure(){
 let d=await fetch('/MangementSystem/getTables.php')
 let data=await d.json()
@@ -68,7 +69,96 @@ btn.classList.add("active");
 function makearray(arr){
   return Array.from(arr);
 }
+function buieldHeadTable(){
+ let fields=document.createElement("div")
+  const thead=document.createElement("thead");
+ let typeArr=[];
+const tr = document.createElement("tr");
+  fields.innerHTML=""
+  columnsName.forEach((e)=>{
+    let text=``
+  if(e.default){
+text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="${e.default}"></div>`
+  }
+  else if(e.null==="YES"){
+ text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="You can left it empty"></div>`
+  }
+  else{
+   text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="without default value"></div>`
+  }
+   typeArr.push(gettype(e.type))
+    if(!e.extra.includes("auto_increment"))
+    fields.innerHTML+=` <div class="col-md-3 col-sm-6 col-12 mb-3">
+  <label class="form-label">${e.name}</label>
+ ${text}
+  `
 
+  const th = document.createElement("th");
+   
+    th.textContent = e.name;
+    tr.appendChild(th);
+
+  })
+    const th = document.createElement("th");
+   
+  th.textContent ="action";
+    tr.appendChild(th);
+  thead.appendChild(tr);
+  headtablewithfields["thead"] = thead;
+  headtablewithfields["fields"] = fields;
+
+  
+}
+function bieldMain(tableName,fields,thead,tbody){
+return `
+ <section id="section-${tableName}" class="section-view active">
+                <h2 class="section-title">${tableName}</h2>
+                <div class="card mb-4 ">
+                    <div class="card-header">Insert New ${tableName}</div>
+                    <div class="card-body">
+                        <form id="form${tableName}Insert">
+                        <div class="row">
+                           ${fields}
+                           </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">Insert ${tableName}</button>
+                        </form>
+                    </div>
+                </div>
+                </div>
+                    <section class="dashboard-section">
+              <h2>Complete Table Structure</h2>
+      
+        <div class="db-card">
+          <div class="card-header">${tableName} List
+             <input type="text" class="form-control form-control-sm" placeholder="Search...">
+          </div>
+          <div class="card-body">
+            <table class="db-table">
+              
+                  ${thead}
+             
+              ${tbody}
+            
+            </table>
+          </div>
+        </div>
+</section>
+</section>
+
+
+`
+}
+function bieldActionDiv(primarykey){
+  return `  <div class="action" id="action">
+        <button class="btn-edit" data-id="${primarykey}">
+            <i class="fas fa-edit me-1"></i>Edit
+        </button>
+        <button class="btn-delete" data-id="${primarykey}">
+            <i class="fas fa-trash me-1"></i>Delete
+        </button>
+    </div`
+}
      
 
  tablesbtn.addEventListener("click", async (event) => {
@@ -93,45 +183,12 @@ makearray(table.columns).forEach((e)=>{
 columnsName.push(e)
   })
  
-  let fields=document.createElement("div")
-  const thead=document.createElement("thead");
  
-const tr = document.createElement("tr");
-  fields.innerHTML=""
-  columnsName.forEach((e)=>{
-    let text=``
-  if(e.default){
-text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="${e.default}"></div>`
-  }
-  else if(e.null==="YES"){
- text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="You can left it empty"></div>`
-  }
-  else{
-   text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" required placeholder="without default value"></div>`
-  }
-   console.log(e)
-    if(!e.extra.includes("auto_increment"))
-    fields.innerHTML+=` <div class="col-md-3 col-sm-6 col-12 mb-3">
-  <label class="form-label">${e.name}</label>
- ${text}
-  `
-
-  const th = document.createElement("th");
-   
-    th.textContent = e.name;
-    tr.appendChild(th);
-
-  })
-    const th = document.createElement("th");
-   
-  th.textContent ="action";
-    tr.appendChild(th);
-  thead.appendChild(tr);
-  
+  buieldHeadTable()
   const tbody=document.createElement("tbody")
  tbody.setAttribute("id","tablebody")
    makearray(table.data).forEach((e)=>{
-    console.log(columnsName.find((e)=>e.key==="PRI"))
+
    let primarykey=e[columnsName.find((e)=>e.key==="PRI").name]
     const tr2 = document.createElement("tr");
 
@@ -146,69 +203,22 @@ text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" 
     tr2.appendChild(td);
   })
 const td=document.createElement("td")
-td.innerHTML=`  <div class="action" id="action">
-        <button class="btn-edit" data-id="${primarykey}">
-            <i class="fas fa-edit me-1"></i>Edit
-        </button>
-        <button class="btn-delete" data-id="${primarykey}">
-            <i class="fas fa-trash me-1"></i>Delete
-        </button>
-    </div>`
+td.innerHTML=bieldActionDiv(primarykey)
                      tr2.appendChild(td);
    tbody.appendChild(tr2);
 })
- console.log(tbody)
-  
-
-main.innerHTML=`
- <section id="section-${tableName}" class="section-view active">
-                <h2 class="section-title">${tableName}</h2>
-                <div class="card mb-4 ">
-                    <div class="card-header">Insert New ${tableName}</div>
-                    <div class="card-body">
-                        <form id="form${tableName}Insert">
-                        <div class="row">
-                           ${fields.innerHTML}
-                           </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary mt-3">Insert ${tableName}</button>
-                        </form>
-                    </div>
-                </div>
-                </div>
-                    <section class="dashboard-section">
-              <h2>Complete Table Structure</h2>
-      
-        <div class="db-card">
-          <div class="card-header">${tableName} List
-             <input type="text" class="form-control form-control-sm" placeholder="Search...">
-          </div>
-          <div class="card-body">
-            <table class="db-table">
-              
-                  ${thead.outerHTML}
-             
-              ${tbody.outerHTML}
-            
-            </table>
-          </div>
-        </div>
-</section>
-</section>
-
-
-`
+main.innerHTML=bieldMain(tableName,headtablewithfields["fields"].innerHTML, headtablewithfields["thead"].outerHTML,tbody.outerHTML)
 const tablebody=document.getElementById("tablebody");
 const action=makearray(document.querySelectorAll(".btn-edit"));
 
 action.forEach((b)=>{
 
 b.addEventListener("click",()=>{
-console.log(b)
+
  const cell= makearray(tablebody.querySelectorAll(".edittd"))
  let cel=makearray(cell.filter((e)=>e.getAttribute("id")=== b.dataset.id))
- cel.forEach((e)=>{
-  e.innerHTML=` <input type="text" class="form-control s" required placeholder="without default value">`
+ cel.forEach((e,index)=>{
+  e.innerHTML=` <input type="${typeArr[index]}" class="inputedit" required placeholder="without default value">`
  })
 
     
