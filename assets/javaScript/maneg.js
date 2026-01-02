@@ -116,25 +116,45 @@ text=` <input type="${gettype(e.type)}" class="form-control s" name="${e.name}" 
  ${text}
   `
 
-  
-   const th = document.createElement("th");
+  const th = document.createElement("th");
+   
     th.textContent = e.name;
     tr.appendChild(th);
 
   })
+    const th = document.createElement("th");
+   
+  th.textContent ="action";
+    tr.appendChild(th);
   thead.appendChild(tr);
   
   const tbody=document.createElement("tbody")
- 
- 
-  makearray(table.data).forEach((e)=>{
-   
+ tbody.setAttribute("id","tablebody")
+   makearray(table.data).forEach((e)=>{
+    console.log(columnsName.find((e)=>e.key==="PRI"))
+   let primarykey=e[columnsName.find((e)=>e.key==="PRI").name]
     const tr2 = document.createElement("tr");
+
      columnsName.forEach((e1)=>{
+    
          const td = document.createElement("td");
     td.textContent = e[e1.name];
+      if(e1.key!="PRI"){
+        td.classList.add("edittd")
+      td.setAttribute("id",primarykey)
+      }
     tr2.appendChild(td);
   })
+const td=document.createElement("td")
+td.innerHTML=`  <div class="action" id="action">
+        <button class="btn-edit" data-id="${primarykey}">
+            <i class="fas fa-edit me-1"></i>Edit
+        </button>
+        <button class="btn-delete" data-id="${primarykey}">
+            <i class="fas fa-trash me-1"></i>Delete
+        </button>
+    </div>`
+                     tr2.appendChild(td);
    tbody.appendChild(tr2);
 })
  console.log(tbody)
@@ -178,5 +198,24 @@ main.innerHTML=`
 
 
 `
+const tablebody=document.getElementById("tablebody");
+const action=makearray(document.querySelectorAll(".btn-edit"));
+
+action.forEach((b)=>{
+
+b.addEventListener("click",()=>{
+console.log(b)
+ const cell= makearray(tablebody.querySelectorAll(".edittd"))
+ let cel=makearray(cell.filter((e)=>e.getAttribute("id")=== b.dataset.id))
+ cel.forEach((e)=>{
+  e.innerHTML=` <input type="text" class="form-control s" required placeholder="without default value">`
+ })
+
+    
+  console.log(cel)
+b.textContent="save"
+})
+})
+
  
 });
