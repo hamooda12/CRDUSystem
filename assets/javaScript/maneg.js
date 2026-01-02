@@ -1,6 +1,7 @@
 const tablesbtn=document.getElementById("tablesbutton")
 const main=document.getElementById("mainSection")
 let columnsName=[];
+let typeArr=[]
 const  headtablewithfields={};
 getbasicstructure()
 function gettype(type) {
@@ -179,7 +180,10 @@ initDashboard()
   getDB() 
 table= await data.tables.find((e)=> e.table===tableName)
  columnsName.length = 0;
+ typeArr.length = 0;
 makearray(table.columns).forEach((e)=>{
+  if(e.key!=="PRI")
+  typeArr.push(gettype(e.type))
 columnsName.push(e)
   })
  
@@ -204,26 +208,47 @@ columnsName.push(e)
   })
 const td=document.createElement("td")
 td.innerHTML=bieldActionDiv(primarykey)
-                     tr2.appendChild(td);
-   tbody.appendChild(tr2);
+tr2.appendChild(td);
+tbody.appendChild(tr2);
 })
 main.innerHTML=bieldMain(tableName,headtablewithfields["fields"].innerHTML, headtablewithfields["thead"].outerHTML,tbody.outerHTML)
 const tablebody=document.getElementById("tablebody");
 const action=makearray(document.querySelectorAll(".btn-edit"));
 
+
 action.forEach((b)=>{
-
+let fieldvalue=[];
 b.addEventListener("click",()=>{
-
+  
  const cell= makearray(tablebody.querySelectorAll(".edittd"))
  let cel=makearray(cell.filter((e)=>e.getAttribute("id")=== b.dataset.id))
- cel.forEach((e,index)=>{
-  e.innerHTML=` <input type="${typeArr[index]}" class="inputedit" required placeholder="without default value">`
- })
+if(b.classList.contains("btn-save"))
+{
+ b.classList.toggle("btn-edit");
+b.classList.toggle("btn-save");
+b.textContent="Edit"
 
-    
-  console.log(cel)
-b.textContent="save"
+ cel.forEach((e,index)=>{
+  console.log(fieldvalue[index])
+ 
+  e.innerHTML=``
+   e.textContent=fieldvalue[index]
+ })
+}
+else{
+ b.classList.toggle("btn-edit");
+b.classList.toggle("btn-save");
+b.textContent="Save"
+
+ cel.forEach((e,index)=>{
+   fieldvalue.push(e.textContent)
+  
+  e.innerHTML=`<textarea class="inputedit" rows="2"></textarea>`
+ })
+}
+
+
+
 })
 })
 
