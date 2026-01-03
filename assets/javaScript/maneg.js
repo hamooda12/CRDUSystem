@@ -2,7 +2,9 @@ const tablesbtn=document.getElementById("tablesbutton")
 const main=document.getElementById("mainSection")
 let columnsName=[];
 let typeArr=[]
+  const isnull=[];
 const  headtablewithfields={};
+let checkright={};
 getbasicstructure()
 function gettype(type) {
   const t = type.toLowerCase();
@@ -160,7 +162,21 @@ function bieldActionDiv(primarykey){
         </button>
     </div`
 }
-     
+function checkRightEdit(e,index,types,isnull){
+if(typeof (e)==="string"&&types[index]==="number"&&!isNaN(parseFloat(e))){
+    checkright= {"state":true,"index":index,"message":"you uptated the data"};
+  }
+else if(typeof (e)==="string" &&types[index]!="text"||(typeof (e)==="string" &&types[index]==="text"&&!isNaN(parseFloat(e))))
+checkright={"state":false,"index":index,"message":"type"}
+else if(e ==="" && !isnull[index])
+checkright= {"state":false,"index":index,"message":"can't be empty"}
+else{
+checkright= {"state":true,"index":index,"message":"you uptated the data"};
+}
+return checkright
+
+}
+
 
  tablesbtn.addEventListener("click", async (event) => {
 
@@ -181,6 +197,7 @@ initDashboard()
 table= await data.tables.find((e)=> e.table===tableName)
  columnsName.length = 0;
  typeArr.length = 0;
+ isnull.length=0
 makearray(table.columns).forEach((e)=>{
   if(e.key!=="PRI")
   typeArr.push(gettype(e.type))
@@ -192,11 +209,14 @@ columnsName.push(e)
   const tbody=document.createElement("tbody")
  tbody.setAttribute("id","tablebody")
    makearray(table.data).forEach((e)=>{
+  
 
    let primarykey=e[columnsName.find((e)=>e.key==="PRI").name]
     const tr2 = document.createElement("tr");
 
      columnsName.forEach((e1)=>{
+ 
+       e1.null==="YES"? isnull.push(false):isnull.push(true)
     
          const td = document.createElement("td");
     td.textContent = e[e1.name];
@@ -218,12 +238,38 @@ const action=makearray(document.querySelectorAll(".btn-edit"));
 
 action.forEach((b)=>{
 let fieldvalue=[];
+checkright={}
+let bool=true;
+let indexbool=-1
 b.addEventListener("click",()=>{
-  
+bool=true;
  const cell= makearray(tablebody.querySelectorAll(".edittd"))
  let cel=makearray(cell.filter((e)=>e.getAttribute("id")=== b.dataset.id))
 if(b.classList.contains("btn-save"))
 {
+  fieldvalue=[]
+  let val=makearray(document.querySelectorAll(".inputedit"))
+  val.forEach((e)=>{
+fieldvalue.push(e.value)
+console.log(e)
+  })
+  
+  fieldvalue.forEach((e,index)=>{
+
+  checkRightEdit(e,index,typeArr,isnull)
+  let state=checkright.state
+  let message=checkright.message
+  let ind=checkright.index
+  if(!state){
+    bool=false;
+    alert(message)
+    cel[ind].value=``
+    indexbool=ind
+    return
+  }})
+  if(bool){
+    alert("succses edit")
+    
  b.classList.toggle("btn-edit");
 b.classList.toggle("btn-save");
 b.textContent="Edit"
@@ -234,21 +280,31 @@ b.textContent="Edit"
   e.innerHTML=``
    e.textContent=fieldvalue[index]
  })
+}else{
+   b.classList.toggle("btn-edit");
+b.classList.toggle("btn-save");
+ cel[indexbool].innerHTML=`<textarea class="inputedit" rows="2" ></textarea>`
+   cel[indexbool].querySelector("textarea").focus()
+   
+}
+
 }
 else{
  b.classList.toggle("btn-edit");
 b.classList.toggle("btn-save");
 b.textContent="Save"
-
+fieldvalue=[]
  cel.forEach((e)=>{
    fieldvalue.push(e.textContent)
   
-  e.innerHTML=`<textarea class="inputedit" rows="2" ></textarea>`
+  e.innerHTML=`<textarea class="inputedit" rows="2" >${e.textContent}</textarea>`
+ 
  })
 
   cel.forEach((e,index)=>{
-    if(index==0)
-  console.log( e.querySelector("textarea").focus())
+    if(index==0){
+   e.querySelector("textarea").focus()
+   e.querySelector("textarea").select()}
  })
 
 }
