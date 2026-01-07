@@ -213,8 +213,34 @@ function isZeroDateString(dateStr) {
 
   return zeroPatterns.some(pattern => pattern.test(dateStr));
 }
+function insertata(tableName,dataInsert){
+
+fetch("http://localhost/api/insert.php", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        table: tableName,
+        data: dataInsert
+    })
+})
+.then(res => res.json())
+.then(data => {
+    console.log(data);
+
+    if (data.success) {
+        alert("تم الإدخال بنجاح! ID = " + data.insert_id);
+    } else {
+        alert("خطأ: " + data.message);
+    }
+});
 
 
+}
+function updateData(){
+
+}
 function checkRightEdit(e,index,types){
   console.log(typeof (e),types[index],index,e,isnull[index],isZeroDateString(e),isValidDateString(e))
     if(typeof (e)==="string"&&types[index]==="Date"&&isnull[index]&&e.length===0){
@@ -347,7 +373,7 @@ columnsName.forEach((e,index)=>{
   if(index>0)
   dataedit[`${e.name}`]=fieldvalue[index-1]
 })
-dataedit
+
 const payload = {
   table: tableName,
   data:dataedit,
