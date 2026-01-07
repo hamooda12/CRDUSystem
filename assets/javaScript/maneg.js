@@ -2,9 +2,11 @@ const tablesbtn=document.getElementById("tablesbutton")
 const main=document.getElementById("mainSection")
 let columnsName=[];
 let typeArr=[]
-  const isnull=[];
+let isnull=[];
 const  headtablewithfields={};
 let checkright={};
+let errorfieldindex=[]
+let dataedit={}
 getbasicstructure()
 function gettype(type) {
   const t = type.toLowerCase();
@@ -162,8 +164,66 @@ function bieldActionDiv(primarykey){
         </button>
     </div`
 }
-function checkRightEdit(e,index,types,isnull){
-if(typeof (e)==="string"&&types[index]==="number"&&!isNaN(parseFloat(e))){
+function isValidDateString(dateStr) {
+  const patterns = [
+    // DD-MM-YYYY or DD/MM/YYYY
+    /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/,
+    // MM-DD-YYYY or MM/DD/YYYY
+    /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/,
+    // YYYY-MM-DD or YYYY/MM/DD
+    /^(\d{4})[\/-](\d{2})[\/-](\d{2})$/
+  ];
+
+  for (const pattern of patterns) {
+    const match = dateStr.match(pattern);
+    if (!match) continue;
+
+    let day, month, year;
+
+    if (match[1].length === 4) {
+      // YYYY-MM-DD
+      year = +match[1];
+      month = +match[2];
+      day = +match[3];
+    } else {
+      // DD-MM-YYYY أو MM-DD-YYYY
+      year = +match[3];
+      month = +match[2];
+      day = +match[1];
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    if (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+function isZeroDateString(dateStr) {
+  const zeroPatterns = [
+    /^00[\/-]00[\/-]0000$/, // DD-MM-YYYY or MM-DD-YYYY
+    /^0000[\/-]00[\/-]00$/  // YYYY-MM-DD
+  ];
+
+  return zeroPatterns.some(pattern => pattern.test(dateStr));
+}
+
+
+function checkRightEdit(e,index,types){
+  console.log(typeof (e),types[index],index,e,isnull[index],isZeroDateString(e),isValidDateString(e))
+    if(typeof (e)==="string"&&types[index]==="Date"&&isnull[index]&&e.length===0){
+    checkright= {"state":true,"index":index,"message":"you uptated the data"};
+  }
+  else if((typeof (e)==="string"&&types[index]==="Date"&&(isValidDateString(e)||isZeroDateString(e)))){
+    checkright= {"state":true,"index":index,"message":"you uptated the data"};
+  }
+else if(typeof (e)==="string"&&types[index]==="number"&&!isNaN(parseFloat(e))){
     checkright= {"state":true,"index":index,"message":"you uptated the data"};
   }
 else if(typeof (e)==="string" &&types[index]!="text"||(typeof (e)==="string" &&types[index]==="text"&&!isNaN(parseFloat(e))))
@@ -175,6 +235,17 @@ checkright= {"state":true,"index":index,"message":"you uptated the data"};
 }
 return checkright
 
+}
+function fillerrorfield(fieldvalue){
+   fieldvalue.forEach((e,index)=>{
+  checkRightEdit(e,index,typeArr,isnull)
+  let state=checkright.state
+  let message=checkright.message
+  let ind=checkright.index
+  if(!state){
+    errorfieldindex.push({"index":ind,"message":message})
+    cel[ind].value=``
+  }})
 }
 
 
@@ -203,23 +274,26 @@ makearray(table.columns).forEach((e)=>{
   typeArr.push(gettype(e.type))
 columnsName.push(e)
   })
- 
- 
+ dataedit={}
+   let primarykey=""
   buieldHeadTable()
   const tbody=document.createElement("tbody")
  tbody.setAttribute("id","tablebody")
+ isnull=[]
+      columnsName.forEach((e1)=>{
+ 
+       e1.null==="YES"? isnull.push(false):isnull.push(true)})
    makearray(table.data).forEach((e)=>{
   
 
-   let primarykey=e[columnsName.find((e)=>e.key==="PRI").name]
+    primarykey=e[columnsName.find((e)=>e.key==="PRI").name]
     const tr2 = document.createElement("tr");
-
      columnsName.forEach((e1)=>{
  
-       e1.null==="YES"? isnull.push(false):isnull.push(true)
     
          const td = document.createElement("td");
     td.textContent = e[e1.name];
+    td.setAttribute("data-key",`${e[primarykey]}`)
       if(e1.key!="PRI"){
         td.classList.add("edittd")
       td.setAttribute("id",primarykey)
@@ -231,43 +305,77 @@ td.innerHTML=bieldActionDiv(primarykey)
 tr2.appendChild(td);
 tbody.appendChild(tr2);
 })
+
 main.innerHTML=bieldMain(tableName,headtablewithfields["fields"].innerHTML, headtablewithfields["thead"].outerHTML,tbody.outerHTML)
 const tablebody=document.getElementById("tablebody");
 const action=makearray(document.querySelectorAll(".btn-edit"));
 
 
 action.forEach((b)=>{
+
+b.addEventListener("click",()=>{
 let fieldvalue=[];
 checkright={}
-let bool=true;
-let indexbool=-1
-b.addEventListener("click",()=>{
 bool=true;
  const cell= makearray(tablebody.querySelectorAll(".edittd"))
  let cel=makearray(cell.filter((e)=>e.getAttribute("id")=== b.dataset.id))
+
+
 if(b.classList.contains("btn-save"))
 {
-  fieldvalue=[]
+  errorfieldindex=[]
   let val=makearray(document.querySelectorAll(".inputedit"))
   val.forEach((e)=>{
 fieldvalue.push(e.value)
-console.log(e)
-  })
-  
-  fieldvalue.forEach((e,index)=>{
 
-  checkRightEdit(e,index,typeArr,isnull)
+  })
+
+  fieldvalue.forEach((e,index)=>{
+  checkRightEdit(e,index,typeArr)
+
   let state=checkright.state
   let message=checkright.message
   let ind=checkright.index
   if(!state){
-    bool=false;
-    alert(message)
+    errorfieldindex.push({"index":ind,"message":message})
     cel[ind].value=``
-    indexbool=ind
-    return
   }})
-  if(bool){
+  if(!errorfieldindex.length){
+    console.log(fieldvalue,columnsName)
+
+columnsName.forEach((e,index)=>{
+  if(index>0)
+  dataedit[`${e.name}`]=fieldvalue[index-1]
+})
+dataedit
+const payload = {
+  table: tableName,
+  data:dataedit,
+  where: {
+  [columnsName[0].name]: cel[0].getAttribute("id")
+  }
+};
+console.log(payload)
+fetch("/MangementSystem/update.php", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+})
+.then(res => res.json())
+.then(data => {
+  if (data.success) {
+    console.log("✅ تم التحديث بنجاح");
+    console.log(data);
+  } else {
+    console.error("❌ فشل التحديث:", data.message);
+  }
+})
+.catch(err => {
+  console.error("🚨 خطأ في الاتصال:", err);
+});
+
     alert("succses edit")
     
  b.classList.toggle("btn-edit");
@@ -275,17 +383,15 @@ b.classList.toggle("btn-save");
 b.textContent="Edit"
 
  cel.forEach((e,index)=>{
-  console.log(fieldvalue[index])
- 
   e.innerHTML=``
-   e.textContent=fieldvalue[index]
+  e.textContent=fieldvalue[index]
  })
 }else{
-   b.classList.toggle("btn-edit");
-b.classList.toggle("btn-save");
- cel[indexbool].innerHTML=`<textarea class="inputedit" rows="2" ></textarea>`
-   cel[indexbool].querySelector("textarea").focus()
-   
+errorfieldindex.forEach((e,index)=>{   
+cel[e.index].innerHTML=`<textarea class="inputedit" rows="2"></textarea>`
+if(index===0)cel[e.index].querySelector("textarea").focus()
+})
+
 }
 
 }
@@ -293,7 +399,6 @@ else{
  b.classList.toggle("btn-edit");
 b.classList.toggle("btn-save");
 b.textContent="Save"
-fieldvalue=[]
  cel.forEach((e)=>{
    fieldvalue.push(e.textContent)
   
