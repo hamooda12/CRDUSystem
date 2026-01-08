@@ -253,8 +253,13 @@ function updateData() {
 }
 
 function checkRightEdit(e, index, types) {
-  console.log(typeof (e), types[index], index, e, isnull[index], isZeroDateString(e), isValidDateString(e))
-  if (typeof (e) === "string" && types[index] === "Date" && isnull[index] && e.length === 0) {
+ if(isnull[index]&&e.length===0)
+    checkright = {
+      "state": true,
+      "index": index,
+      "message": "you uptated the data"
+    };
+  else if (typeof (e) === "string" && types[index] === "Date" && isnull[index] && e.length === 0) {
     checkright = {
       "state": true,
       "index": index,
@@ -311,8 +316,6 @@ function fillerrorfield(fieldvalue) {
   })
 }
 
-
-
 tablesbtn.addEventListener("click", async (event) => {
 
   const button = event.target.closest(".nav-button");
@@ -345,7 +348,7 @@ tablesbtn.addEventListener("click", async (event) => {
   isnull = []
   columnsName.forEach((e1) => {
 
-    e1.null === "YES" ? isnull.push(false) : isnull.push(true)
+    e1.null === "YES" ? isnull.push(true) : isnull.push(false)
   })
   makearray(table.data).forEach((e) => {
 
@@ -383,12 +386,13 @@ insertbtn.addEventListener("click",(e)=>{
       console.log(cell)
         errorfieldindex = []
         cell.forEach((e) => {
-          console.log(e.value)
+ 
           fieldvalue.push(e.value)
         })
 
         fieldvalue.forEach((e, index) => {
-          checkRightEdit(e, index, typeArr)
+          checkRightEdit(e, index+1, typeArr)
+          console.log(typeArr,isnull)
           let state = checkright.state
           let message = checkright.message
           let ind = checkright.index
@@ -400,10 +404,7 @@ insertbtn.addEventListener("click",(e)=>{
           }
         })
         if (!errorfieldindex.length) {
-          columnsName.forEach((e, index) => {
-            if (index > 0)
-              dataedit[`${e.name}`] = fieldvalue[index - 1]
-          })
+       
 
 fetch("/MANGEMENTSYSTEM/insert.php", {
     method: "POST",
@@ -420,6 +421,10 @@ fetch("/MANGEMENTSYSTEM/insert.php", {
   
     if (data.success) {
         alert("succses insertation" + data.insert_id);
+           columnsName.forEach((e, index) => {
+            if (index > 0)
+              dataedit[`${e.name}`] = fieldvalue[index - 1]
+          })
       location.reload();
 
     } else {
@@ -430,7 +435,15 @@ fetch("/MANGEMENTSYSTEM/insert.php", {
     console.error("Fetch error:", err);
 });
 
-  }})
+  }
+  else {
+        alert("you have insert error")
+      console.log(fieldvalue)
+      }
+
+
+
+})
 
   const tablebody = document.getElementById("tablebody");
   const action = makearray(document.querySelectorAll(".btn-edit"));
@@ -455,7 +468,7 @@ fetch("/MANGEMENTSYSTEM/insert.php", {
         })
 
         fieldvalue.forEach((e, index) => {
-          checkRightEdit(e, index, typeArr)
+          checkRightEdit(e, index+1, typeArr)
 
           let state = checkright.state
           let message = checkright.message
