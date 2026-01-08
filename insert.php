@@ -37,11 +37,11 @@ if (!isset($input['table']) || !isset($input['data'])) {
 }
 
 $table = $input['table'];
-$data = $input['data'];
+$data  = $input['data'];
 
-
+/* تجهيز الأعمدة والقيم */
 $columns = [];
-$values = [];
+$values  = [];
 
 foreach ($data as $col => $val) {
     $columns[] = "`$col`";
@@ -50,10 +50,12 @@ foreach ($data as $col => $val) {
 }
 
 $columnsSql = implode(", ", $columns);
-$valuesSql = implode(", ", $values);
+$valuesSql  = implode(", ", $values);
 
+/* بناء الاستعلام */
 $sql = "INSERT INTO `$table` ($columnsSql) VALUES ($valuesSql)";
 
+/* التنفيذ */
 if (mysqli_query($conn, $sql)) {
     echo json_encode([
         "success" => true,
